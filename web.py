@@ -7,7 +7,7 @@ The API is implemented using the ``flask`` package.
 
 # GENERAL PACKAGE IMPORT
 # ----------------------
-from flask import Flask
+from flask import Flask, request
 from flask_restful import Resource, Api, reqparse
 import json
 from testcase import EmulatorSetup
@@ -49,7 +49,6 @@ class Advance(Resource):
 
     def __init__(self, **kwargs):   
         self.case = kwargs["case"]        
-        self.parser_advance = kwargs["parser_advance"]
         self.model_config = kwargs["model_config"]
 
     def post(self):
@@ -57,7 +56,8 @@ class Advance(Resource):
         POST request with input data to advance the simulation one step 
         and receive current measurements.
         """
-        u = self.parser_advance.parse_args()        
+        u = json.loads(request.get_json(force=True)) 
+        print(u)        
         global u_modelica
         
         if not bool(u_modelica) :        
@@ -191,22 +191,19 @@ def main(config):
     reset_step.add_argument('start_time')
     reset_step.add_argument('end_time')
     reset_step.add_argument('name')
-    # ``advance`` interface
-    parser_advance = reqparse.RequestParser()
-    for key in case.u.keys():
-        parser_advance.add_argument(key)
+
 
     # --------------------------------------
     # ADD REQUESTS TO API WITH URL EXTENSION
     # --------------------------------------
-    api.add_resource(Advance, '/advance', resource_class_kwargs = {"case": case, "parser_advance": parser_advance, "model_config":model_config})
+    api.add_resource(Advance, '/advance', resource_class_kwargs = {"case": case, "model_config":model_config})
     api.add_resource(Reset, '/reset', resource_class_kwargs = {"case": case, "parser_reset": reset_step, "model_config":model_config})
     api.add_resource(Step, '/step', resource_class_kwargs = {"case": case, "parser_step": parser_step})
     api.add_resource(Results, '/results', resource_class_kwargs = {"case": case})
     api.add_resource(Inputs, '/inputs', resource_class_kwargs = {"case": case, "model_config":model_config})
     api.add_resource(Measurements, '/measurements', resource_class_kwargs = {"case": case, "model_config":model_config})
     # --------------------------------------
-    app.run(debug=False, host='0.0.0.0',port=5500)        
+    app.run(debug=True, host='0.0.0.0',port=5500)        
     # --------------------------------------
 
 if __name__ == '__main__':
