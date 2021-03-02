@@ -64,7 +64,7 @@ class Advance(Resource):
             y = self.case.advance({})            
         else:
 
-            if (float(self.case.start_time) + self.case.step)/60>0:
+            if self.case.step/60>0:
             
                 y = self.case.advance(u_modelica)
             
