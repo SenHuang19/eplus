@@ -49,7 +49,7 @@ class EmulatorSetup(object):
         self.__init__(config)
         
                 
-    def advance(self,u):
+    def advance(self, u):
         '''Advances the test case model simulation forward one step.
         
         Parameters
@@ -73,16 +73,21 @@ class EmulatorSetup(object):
         
             for key in u.keys():
             
-                if key !='time' and u[key] is not None and (key in self.inputs.keys()):                      
+                if key !='time' and u[key] is not None and (key in self.inputs.keys()):
                       
                       self.inputs[key] = u[key]
                       
-            for key in self.inputs.keys():
-        
-                self.fmu.set(key,self.inputs[key])
+            for key in self.inputs.keys(): 
+            
+                if key in u:
                 
+                      self.inputs[key] = u[key]
+                      
+                self.fmu.set(key, self.inputs[key])
                 
-        for i in range(max(int(self.step/60),1)):
+                self.u_store[key].append(self.inputs[key])
+                               
+        for i in range(self.step/60):
         
             self.fmu.do_step(current_t=self.start_time, step_size=60)
             
@@ -99,15 +104,11 @@ class EmulatorSetup(object):
         
                       self.y[key] = self.fmu.get(key)[0]
             
-                self.y_store[key] = self.y_store[key] + [self.y[key]]
+                self.y_store[key].append(self.y[key])
             
         # Store control inputs
-        
-        for key in self.inputs:
-                    
-                self.u_store[key] = self.u_store[key] + [self.inputs[key]]
-                                                   
-        self.u_store['time'] = self.u_store['time'] + [max(self.start_time-self.step,self.init_time+60)]   
+                                                           
+        self.u_store['time'].append(self.start_time+self.step)
         
         return self.y
 

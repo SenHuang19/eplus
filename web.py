@@ -41,9 +41,6 @@ def cosim_data(u, dic):
 # DEFINE REST REQUESTS
 # ----------------------
 
-
-
-
 class Advance(Resource):
     """Interface to advance the test case simulation."""
 
@@ -57,17 +54,11 @@ class Advance(Resource):
         and receive current measurements.
         """
         u = json.loads(request.get_json(force=True)) 
-        print(u)        
-        global u_modelica
-        
-        if not bool(u_modelica) :        
-            y = self.case.advance({})            
-        else:
-
-            if self.case.step/60>0:
-            
-                y = self.case.advance(u_modelica)
-            
+        # print(u)        
+        global u_modelica       
+        if not bool(u_modelica):        
+            if self.case.step/60>0:           
+                y = self.case.advance(u_modelica)           
 #        print(self.case.y)
 #        print(y)
         u_eplus = cosim_data(y,self.model_config['outputs'])
