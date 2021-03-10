@@ -68,6 +68,8 @@ class EmulatorSetup(object):
         
         # Set control inputs if they exist and are written
         # Check if possible to overwrite
+        
+        self.init_time = self.init_time + self.step
 
         if u.keys():
         
@@ -86,12 +88,14 @@ class EmulatorSetup(object):
                 self.fmu.set(key, self.inputs[key])
                 
                 self.u_store[key].append(self.inputs[key])
+                
+        if (self.init_time - self.start_time)%60 == 0:
                                
-        for i in range(self.step/60):
+            for i in range(int((self.init_time - self.start_time)/60)):
         
-            self.fmu.do_step(current_t=self.start_time, step_size=60)
+                 self.fmu.do_step(current_t=self.start_time, step_size=60)
             
-            self.start_time = self.start_time + 60
+                 self.start_time = self.start_time + 60
 
         # Get result and store measurement
         for key in self.y:
@@ -108,7 +112,7 @@ class EmulatorSetup(object):
             
         # Store control inputs
                                                            
-        self.u_store['time'].append(self.start_time+self.step)
+        self.u_store['time'].append(self.start_time)
         
         return self.y
 
