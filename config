@@ -1,6 +1,6 @@
 {
 	"name": "baseline",
-	"fmupath": "eplus/wholebuilding_noOcc.fmu",
+	"fmupath": "eplus/wholebuilding.fmu",
 	"start_time": "200 * 86400",
 	"end_time": "201 * 86400",
 	"step": 60,
@@ -36,6 +36,6 @@
 	            "Load[14]":[["Zone4_top_Sensible_COOLING_LOAD","Zone4_top_Latent_COOLING_LOAD","Zone4_top_HEATING_LOAD"],[1,1,-1]],
 	            "Load[15]":[["Zone5_top_Sensible_COOLING_LOAD","Zone5_top_Latent_COOLING_LOAD","Zone5_top_HEATING_LOAD"],[1,1,-1]],
 				"TDryBul":[["Outdoor_Temperature",273.15],[1,1]],
-			   "Occ":[["Occ",1],[0,1]]				
+			   "Occ":[["Occ",1],[1,0]]				
 	}
 }
