@@ -53,7 +53,8 @@ class Advance(Resource):
         POST request with input data to advance the simulation one step 
         and receive current measurements.
         """
-        u = json.loads(request.get_json(force=True)) 
+#        u = json.loads(request.get_json(force=True)) 
+        u = request.get_json(force=True)
         # print(u)        
         global u_modelica       
         if not bool(u_modelica): 
