@@ -13,7 +13,7 @@ import json
 from testcase import EmulatorSetup
 import requests
 
-url = 'http://jmodelica:5000'
+
 
 u_modelica = {}
 
@@ -47,6 +47,7 @@ class Advance(Resource):
     def __init__(self, **kwargs):   
         self.case = kwargs["case"]        
         self.model_config = kwargs["model_config"]
+        self.url = kwargs["url"]
 
     def post(self):
         """
@@ -63,7 +64,7 @@ class Advance(Resource):
         u_eplus = cosim_data(y,self.model_config['outputs'])
 #        print(u_eplus)        
         u.update(u_eplus) 
-        y_modelica = requests.post('{0}/advance'.format(url), data=u).json()
+        y_modelica = requests.post('{0}/advance'.format(self.url), data=u).json()
 #        print(self.model_config['inputs'])        
         u_modelica = cosim_data(y_modelica,self.model_config['inputs'])   
 #        print(u_modelica)  
@@ -81,13 +82,14 @@ class Reset(Resource):
         self.case = kwargs["case"]
         self.model_config = kwargs["model_config"]
         self.parser_reset = kwargs["parser_reset"]
+        self.url = kwargs["url"]
 
     def put(self):
         """PUT request to reset the test."""
         u = self.parser_reset.parse_args()
         self.model_config['start_time'] = u['start_time']
         self.model_config['end_time'] = u['end_time']
-        requests.put('{0}/reset'.format(url), data={'start_time':float(u['start_time']),'end_time':u['start_time']})
+        requests.put('{0}/reset'.format(self.url), data={'start_time':float(u['start_time']),'end_time':u['start_time']})
         self.case.reset(self.model_config)
         return 
 
@@ -98,6 +100,7 @@ class Step(Resource):
     def __init__(self, **kwargs):
         self.case = kwargs["case"]
         self.parser_step = kwargs["parser_step"]
+        self.url = kwargs["url"]
 
     def get(self):
         """GET request to receive current simulation step in seconds."""
@@ -108,7 +111,7 @@ class Step(Resource):
         args = self.parser_step.parse_args()
         step = args['step']
         self.case.set_step(max(60,float(step)))            
-        requests.put('{0}/step'.format(url), data={'step':step})
+        requests.put('{0}/step'.format(self.url), data={'step':step})
         return step, 201                
 
 class Results(Resource):
@@ -127,11 +130,12 @@ class Inputs(Resource):
 
     def __init__(self, **kwargs):   
         self.case = kwargs["case"]
-        self.model_config = kwargs["model_config"]        
+        self.model_config = kwargs["model_config"]
+        self.url = kwargs["url"]        
         
     def get(self):
         """GET request to receive list of available inputs."""
-        u_list = requests.get('{0}/inputs'.format(url)).json()
+        u_list = requests.get('{0}/inputs'.format(self.url)).json()
         u = []
         for key in u_list:
             if not (key in self.model_config['outputs']):
@@ -144,17 +148,18 @@ class Measurements(Resource):
     def __init__(self, **kwargs):
         self.case = kwargs["case"]
         self.model_config = kwargs["model_config"]
+        self.url = kwargs["url"]          
         
     def get(self):
         """GET request to receive list of available measurements."""
-        y_list = requests.get('{0}/measurements'.format(url)).json()
+        y_list = requests.get('{0}/measurements'.format(self.url)).json()
         y = []
         for key in y_list:
             if not (key in self.model_config['inputs']):
                y.append(key)            
         return list(y)
 
-def main(config):
+def main(config,host):
     
     # FLASK REQUIREMENTS
     # ------------------
@@ -167,7 +172,7 @@ def main(config):
 
     with open(config) as json_file:
         model_config = json.load(json_file)
-
+    url = 'http://{}:5000'.format(host)
     case = EmulatorSetup(model_config)
     # ---------------------
 
@@ -186,16 +191,17 @@ def main(config):
     # --------------------------------------
     # ADD REQUESTS TO API WITH URL EXTENSION
     # --------------------------------------
-    api.add_resource(Advance, '/advance', resource_class_kwargs = {"case": case, "model_config":model_config})
-    api.add_resource(Reset, '/reset', resource_class_kwargs = {"case": case, "parser_reset": reset_step, "model_config":model_config})
-    api.add_resource(Step, '/step', resource_class_kwargs = {"case": case, "parser_step": parser_step})
-    api.add_resource(Results, '/results', resource_class_kwargs = {"case": case})
-    api.add_resource(Inputs, '/inputs', resource_class_kwargs = {"case": case, "model_config":model_config})
-    api.add_resource(Measurements, '/measurements', resource_class_kwargs = {"case": case, "model_config":model_config})
+    api.add_resource(Advance, '/advance', resource_class_kwargs = {"case": case, "model_config":model_config,'url':url})
+    api.add_resource(Reset, '/reset', resource_class_kwargs = {"case": case, "parser_reset": reset_step, "model_config":model_config,'url':url})
+    api.add_resource(Step, '/step', resource_class_kwargs = {"case": case, "parser_step": parser_step,'url':url})
+    api.add_resource(Results, '/results', resource_class_kwargs = {"case": case,url:'url'})
+    api.add_resource(Inputs, '/inputs', resource_class_kwargs = {"case": case, "model_config":model_config,'url':url})
+    api.add_resource(Measurements, '/measurements', resource_class_kwargs = {"case": case, "model_config":model_config,'url':url})
     # --------------------------------------
     app.run(debug=True, host='0.0.0.0',port=5500)        
     # --------------------------------------
 
 if __name__ == '__main__':
     import sys
-    main(sys.argv[1])
+    main(sys.argv[1], sys.argv[2])
+    
