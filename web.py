@@ -198,7 +198,7 @@ def main(config,host):
     api.add_resource(Inputs, '/inputs', resource_class_kwargs = {"case": case, "model_config":model_config,'url':url})
     api.add_resource(Measurements, '/measurements', resource_class_kwargs = {"case": case, "model_config":model_config,'url':url})
     # --------------------------------------
-    app.run(debug=True, host='0.0.0.0',port=5500)        
+    app.run(debug=False, host='0.0.0.0',port=5500)        
     # --------------------------------------
 
 if __name__ == '__main__':
