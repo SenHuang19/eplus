@@ -10,6 +10,10 @@ COPY ./testcase.py /home/developer/fmu/testcase.py
 
 COPY ./config /home/developer/fmu/config
 
+COPY ./config_on /home/developer/fmu/config_on
+
+
+
 
 
 
