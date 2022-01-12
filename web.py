@@ -54,8 +54,9 @@ class Advance(Resource):
         POST request with input data to advance the simulation one step 
         and receive current measurements.
         """
-        u = json.loads(request.get_json(force=True)) 
-        # print(u)        
+        u = request.get_json(force=True)
+#        u = json.loads(request.get_json(force=True)) 
+        print(u)        
         global u_modelica       
         if not bool(u_modelica): 
                y = self.case.advance({})  
@@ -198,7 +199,7 @@ def main(config,host):
     api.add_resource(Inputs, '/inputs', resource_class_kwargs = {"case": case, "model_config":model_config,'url':url})
     api.add_resource(Measurements, '/measurements', resource_class_kwargs = {"case": case, "model_config":model_config,'url':url})
     # --------------------------------------
-    app.run(debug=False, host='0.0.0.0',port=5500)        
+    app.run(debug=True, host='0.0.0.0',port=5500)        
     # --------------------------------------
 
 if __name__ == '__main__':
