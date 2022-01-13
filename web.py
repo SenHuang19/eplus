@@ -12,6 +12,7 @@ from flask_restful import Resource, Api, reqparse
 import json
 from testcase import EmulatorSetup
 import requests
+import sys
 
 
 
@@ -56,7 +57,7 @@ class Advance(Resource):
         """
         u = request.get_json(force=True)
 #        u = json.loads(request.get_json(force=True)) 
-        print(u)        
+       
         global u_modelica       
         if not bool(u_modelica): 
                y = self.case.advance({})  
@@ -65,7 +66,8 @@ class Advance(Resource):
         u_eplus = cosim_data(y,self.model_config['outputs'])
 #        print(u_eplus)        
         u.update(u_eplus) 
-        y_modelica = requests.post('{0}/advance'.format(self.url), data=u).json()
+        print(u, file=sys.stderr)         
+        y_modelica = requests.post('{0}/advance'.format(self.url), data=json.dumps(u)).json()
 #        print(self.model_config['inputs'])        
         u_modelica = cosim_data(y_modelica,self.model_config['inputs'])   
 #        print(u_modelica)  
@@ -199,7 +201,7 @@ def main(config,host):
     api.add_resource(Inputs, '/inputs', resource_class_kwargs = {"case": case, "model_config":model_config,'url':url})
     api.add_resource(Measurements, '/measurements', resource_class_kwargs = {"case": case, "model_config":model_config,'url':url})
     # --------------------------------------
-    app.run(debug=True, host='0.0.0.0',port=5500)        
+    app.run(debug=False, host='0.0.0.0',port=5500)        
     # --------------------------------------
 
 if __name__ == '__main__':
